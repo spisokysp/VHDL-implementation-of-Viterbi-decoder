@@ -1,0 +1,186 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+
+
+entity decoder is
+	port(
+			u1,u2: in std_logic;
+			Clock: in std_logic;
+			Output: out std_logic);
+end decoder;
+
+architecture Behavioral of decoder is
+	
+	component bmu1--branch metric unit for state a:00 
+		port(
+				d1,d2: in std_logic;
+				bm1  : out std_logic_vector(2 downto 1));
+	end component;
+	
+	component bmu2--branch metric unit for state b:10 
+		port(
+				d1,d2: in std_logic;
+				bm2  : out std_logic_vector(2 downto 1));
+	end component;
+	
+	component bmu3--branch metric unit for state c:01 
+		port(
+				d1,d2: in std_logic;
+				bm3  : out std_logic_vector(2 downto 1));
+	end component;
+	
+	component bmu4--branch metric unit for state d:11 
+		port(
+				d1,d2: in std_logic;
+				bm4  : out std_logic_vector(2 downto 1));
+	end component;
+	
+	component acs--add-compare-select unit
+		port(
+				pm1,pm2: in std_logic_vector(8 downto 1);
+				bm1,bm2: in std_logic_vector(2 downto 1);
+				newpm    : out std_logic_vector(8 downto 1);
+				branchlocation : out std_logic );
+	end component;
+	
+	component path_choice--choose the path with minimum path metrics, use it's state to start tracing back
+		port(
+				pm1,pm2,pm3,pm4: in std_logic_vector(8 downto 1);
+			   choice: out std_logic_vector(2 downto 1));
+	end component;
+	--hold branch metric
+	signal branch_metric1: std_logic_vector(2 downto 1):="00";
+	signal branch_metric2: std_logic_vector(2 downto 1):="00";
+	signal branch_metric3: std_logic_vector(2 downto 1):="00";
+	signal branch_metric4: std_logic_vector(2 downto 1):="00";
+	--hold path metric
+	signal path_metric1: std_logic_vector(8 downto 1):="00000000";
+	signal path_metric2: std_logic_vector(8 downto 1):="00000111";
+	signal path_metric3: std_logic_vector(8 downto 1):="00000111";
+	signal path_metric4: std_logic_vector(8 downto 1):="00000111";
+	--hold the survivor between the upper and lower path merging into the same state
+	signal new_pm1: std_logic_vector(8 downto 1):="00000000";
+	signal new_pm2: std_logic_vector(8 downto 1):="00000000";
+	signal new_pm3: std_logic_vector(8 downto 1):="00000000";
+	signal new_pm4: std_logic_vector(8 downto 1):="00000000";
+	--hold the branch location for tracing back
+	signal bd1,bd2,bd3,bd4: std_logic;
+	--hold the most likly path to start the tracing back procedure
+	signal chosen_path: std_logic_vector(2 downto 1):="00";
+   --hold the branch location in every time intervals
+	signal bd_record1: std_logic_vector(15 downto 1):="000000000000000";
+	signal bd_record2: std_logic_vector(15 downto 1):="000000000000000";
+	signal bd_record3: std_logic_vector(15 downto 1):="000000000000000";
+	signal bd_record4: std_logic_vector(15 downto 1):="000000000000000";
+	--set the decoding depth
+	signal counter: integer range 1 to 15;
+	
+begin
+	
+	bmu_1: bmu1 port map(u1,u2,branch_metric1);
+	bmu_2: bmu2 port map(u1,u2,branch_metric2);
+	bmu_3: bmu3 port map(u1,u2,branch_metric3);
+	bmu_4: bmu4 port map(u1,u2,branch_metric4);
+
+	acs1: acs port map(path_metric1,path_metric3,branch_metric1,branch_metric4,new_pm1,bd1);
+	acs2: acs port map(path_metric1,path_metric3,branch_metric4,branch_metric1,new_pm2,bd2);
+	acs3: acs port map(path_metric2,path_metric4,branch_metric2,branch_metric3,new_pm3,bd3);
+   acs4: acs port map(path_metric2,path_metric4,branch_metric3,branch_metric2,new_pm4,bd4);
+	
+	path_choice1: path_choice port map(new_pm1,new_pm2,new_pm3,new_pm4,chosen_path);
+	
+	process --trace back unit
+		variable path_holder: integer range 1 to 4;
+	begin
+	
+		wait until Clock' event and Clock = '1';
+		--update the path metrics
+		path_metric1<=new_pm1;
+		path_metric2<=new_pm2;
+		path_metric3<=new_pm3;
+		path_metric4<=new_pm4;
+		--store the branch location in the leftmost position of the shift register
+		bd_record1(15)<=bd1;
+		bd_record2(15)<=bd2;
+		bd_record3(15)<=bd3;
+		bd_record4(15)<=bd4;
+		-- if less than 15 data pairs arrived, no output
+		if(counter<15) then
+				for i in 1 to 14 loop
+					bd_record1(i)<=bd_record1(i+1);
+					bd_record2(i)<=bd_record2(i+1);
+					bd_record3(i)<=bd_record3(i+1);
+					bd_record4(i)<=bd_record4(i+1);
+				end loop;
+				counter<=counter+1;
+		-- generate output after 15 data pairs arrived
+		else
+				case chosen_path is --decide the start of the tracing back procedure
+				when"00"=>
+					path_holder:=1;
+				when"01"=>
+					path_holder:=2;
+				when"10"=>
+					path_holder:=3;
+				when"11"=>
+					path_holder:=4;
+				when others=>
+					null;
+				end case;
+				
+				for k in 15 downto 2 loop--tracing back
+					case path_holder is
+					when 1 =>
+						if (bd_record1(k)='0') then
+							path_holder:=1;
+						else
+							path_holder:=3;
+						end if;
+					when 2 =>
+						if (bd_record2(k)='0') then
+							path_holder:=1;
+						else
+							path_holder:=3;
+						end if;
+					when 3 =>
+						if (bd_record3(k)='0') then
+							path_holder:=2;
+						else
+							path_holder:=4;
+						end if;
+					when 4 =>
+						if (bd_record4(k)='0') then
+							path_holder:=2;
+						else
+							path_holder:=4;
+						end if;
+					when others=>
+						null;
+					end case;
+				end loop;
+				
+				case path_holder is--generate output
+				when 1 =>
+					Output<='0';
+				when 2 =>
+					Output<='1';
+				when 3 =>
+			      Output<='0';
+				when 4 =>
+			      Output<='1';
+				when others=>
+					null;
+				end case;
+						
+				for i in 1 to 14 loop
+					bd_record1(i)<=bd_record1(i+1);
+					bd_record2(i)<=bd_record2(i+1);
+					bd_record3(i)<=bd_record3(i+1);
+					bd_record4(i)<=bd_record4(i+1);
+				end loop;
+		end if;
+	end process;
+
+end Behavioral;
