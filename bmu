@@ -1,0 +1,25 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity bmu1 is
+	port(
+			d1,d2: in std_logic;
+			bm1  : out std_logic_vector(2 downto 1));
+end bmu1;
+
+architecture Structural of bmu1 is
+
+begin
+	bm1(1)<= ((not d1) and d2) or (d1 and (not d2));
+	bm1(2)<= d1 and d2;
+
+end Structural;
