@@ -1,0 +1,70 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    18:37:13 04/19/2018 
+-- Design Name: 
+-- Module Name:    acs - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+
+entity acs is
+	port(
+			pm1,pm2: in std_logic_vector(8 downto 1);
+			bm1,bm2: in std_logic_vector(2 downto 1);
+			newpm    : out std_logic_vector(8 downto 1);
+			branchlocation : out std_logic );
+end acs;
+
+architecture acs_structure of acs is
+	component bm_add_pm
+		port(
+				bm : in std_logic_vector(2 downto 1);
+				pm : in std_logic_vector(8 downto 1);
+				output : out std_logic_vector(8 downto 1));
+	end component;
+	
+	component comparator
+		port(
+				input1: in std_logic_vector(8 downto 1);
+				input2: in std_logic_vector(8 downto 1);
+				smaller: out std_logic);			
+	end component;
+	
+	component selector
+		port(
+				input1,input2: in std_logic_vector(8 downto 1);
+				sele         : in std_logic;
+				output       : out std_logic_vector(8 downto 1));
+	end component;
+	
+	signal upper,lower: std_logic_vector(8 downto 1);
+	signal small: std_logic;
+
+begin
+	
+	add1: bm_add_pm port map(bm1,pm1,upper);
+	add2: bm_add_pm port map(bm2,pm2,lower);
+	
+	compare: comparator port map(upper,lower,small);
+	
+	selector1: selector port map(upper,lower,small,newpm);
+	
+	branchlocation<= (not small);-- 0 for upper 
+	
+
+end acs_structure;
