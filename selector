@@ -1,0 +1,63 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    20:40:43 04/19/2018 
+-- Design Name: 
+-- Module Name:    select - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity mux is
+	port(
+			i1,i2 :in std_logic;
+			s     :in std_logic;
+			o     :out std_logic);
+end mux;
+
+architecture structure of mux is
+begin
+	o<=((not s) and i2 ) or (s and i1);
+
+end structure;
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity selector is
+	port( 
+			input1,input2: in std_logic_vector(8 downto 1);
+			sele         : in std_logic;
+			output       : out std_logic_vector(8 downto 1));
+end selector;
+
+architecture str of selector is
+	component mux
+		port(
+				i1,i2 :in std_logic;
+				s     :in std_logic;
+				o     :out std_logic);
+	end component;
+	
+begin
+	mux1: mux port map(input1(1),input2(1),sele,output(1));
+	mux2: mux port map(input1(2),input2(2),sele,output(2));
+	mux3: mux port map(input1(3),input2(3),sele,output(3));
+	mux4: mux port map(input1(4),input2(4),sele,output(4));
+	mux5: mux port map(input1(5),input2(5),sele,output(5));
+	mux6: mux port map(input1(6),input2(6),sele,output(6));
+	mux7: mux port map(input1(7),input2(7),sele,output(7));
+	mux8: mux port map(input1(8),input2(8),sele,output(8));
+end str;
