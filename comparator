@@ -1,0 +1,81 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    15:25:59 04/19/2018 
+-- Design Name: 
+-- Module Name:    comparator - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity bitcompare is 
+	port(
+			i1,i2  : in std_logic;
+			equ,les: out std_logic);
+end bitcompare;
+
+architecture str of bitcompare is
+	signal z1,z2: std_logic;
+begin
+	z1<= (not i1) and (not i2);
+	z2<= i1 and i2;
+	equ<= z1 or z2;
+	les<= (not i1) and i2;
+end str;
+
+			
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity comparator is
+	port(
+			input1: in std_logic_vector(8 downto 1);
+			input2: in std_logic_vector(8 downto 1);
+			smaller: out std_logic);
+			
+end comparator;
+
+architecture struct of comparator is
+	component bitcompare
+		port(
+				i1,i2  : in std_logic;
+				equ,les: out std_logic);
+	end component;
+	signal e1,e2,e3,e4,e5,e6,e7,e8: std_logic;
+	signal l1,l2,l3,l4,l5,l6,l7,l8: std_logic;
+	signal s1,s2,s3,s4,s5,s6,s7: std_logic;
+begin
+    bit1: bitcompare port map(input1(1),input2(1),e1,l1);
+	 bit2: bitcompare port map(input1(2),input2(2),e2,l2);
+	 bit3: bitcompare port map(input1(3),input2(3),e3,l3);
+	 bit4: bitcompare port map(input1(4),input2(4),e4,l4);
+	 bit5: bitcompare port map(input1(5),input2(5),e5,l5);
+	 bit6: bitcompare port map(input1(6),input2(6),e6,l6);
+	 bit7: bitcompare port map(input1(7),input2(7),e7,l7);
+	 bit8: bitcompare port map(input1(8),input2(8),e8,l8);
+	 
+	 s1<= e8 and l7;
+	 s2<= e8 and e7 and l6;
+	 s3<= e8 and e7 and e6 and l5;
+	 s4<= e8 and e7 and e6 and e5 and l4;
+	 s5<= e8 and e7 and e6 and e5 and e4 and l3;
+	 s6<= e8 and e7 and e6 and e5 and e4 and e3 and l2;
+	 s7<= e8 and e7 and e6 and e5 and e4 and e3 and e2 and l1;
+	 
+	 smaller<= l8 or s1 or s2 or s3 or s4 or s5 or s6 or s7;
+	 
+
+end struct;
