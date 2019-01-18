@@ -1,0 +1,64 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    16:36:57 04/20/2018 
+-- Design Name: 
+-- Module Name:    path_choice - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+
+entity path_choice is
+	port(
+			pm1,pm2,pm3,pm4: in std_logic_vector(8 downto 1);
+			choice         : out std_logic_vector(2 downto 1));
+			
+end path_choice;
+
+architecture struct of path_choice is
+	
+	component comparator
+		port(
+				input1: in std_logic_vector(8 downto 1);
+				input2: in std_logic_vector(8 downto 1);
+				smaller: out std_logic);
+	end component;
+	
+	component selector
+	port( 
+			input1,input2: in std_logic_vector(8 downto 1);
+			sele         : in std_logic;
+			output       : out std_logic_vector(8 downto 1));
+	end component;	
+	
+	signal smaller1,smaller2: std_logic_vector(8 downto 1);
+	signal ch1,ch2,ch3: std_logic;
+	
+begin
+	
+	compare1: comparator port map(pm2,pm1,ch1);
+	compare2: comparator port map(pm4,pm3,ch2);
+	selector1: selector port map(pm2,pm1,ch1,smaller1);
+	selector2: selector port map(pm4,pm3,ch2,smaller2);
+	compare3: comparator port map(smaller2,smaller1,ch3);
+	
+	choice(2)<=ch3;
+	choice(1)<=(ch2 and ch3) or ((not ch3) and ch1);
+
+
+end struct;
+
