@@ -87,7 +87,7 @@ begin
 	acs1: acs port map(path_metric1,path_metric3,branch_metric1,branch_metric4,new_pm1,bd1);
 	acs2: acs port map(path_metric1,path_metric3,branch_metric4,branch_metric1,new_pm2,bd2);
 	acs3: acs port map(path_metric2,path_metric4,branch_metric2,branch_metric3,new_pm3,bd3);
-   acs4: acs port map(path_metric2,path_metric4,branch_metric3,branch_metric2,new_pm4,bd4);
+        acs4: acs port map(path_metric2,path_metric4,branch_metric3,branch_metric2,new_pm4,bd4);
 	
 	path_choice1: path_choice port map(new_pm1,new_pm2,new_pm3,new_pm4,chosen_path);
 	
